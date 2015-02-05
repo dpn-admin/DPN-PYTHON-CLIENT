@@ -1,2 +1,2 @@
 # Install simple HTTP client library
-requests
+requests>=2.5

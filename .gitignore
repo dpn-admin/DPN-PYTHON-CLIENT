@@ -1,3 +1,6 @@
+# Python cache
+__pycache__
+
 # Our Python 3.4 venv
 .dpn
 

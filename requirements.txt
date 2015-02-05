@@ -1,0 +1,2 @@
+# Install simple HTTP client library
+requests

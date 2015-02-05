@@ -1,0 +1,8 @@
+# Our Python 3.4 venv
+.dpn
+
+# Private settings file with sensitive information
+dpn_rest_settings.py
+
+# Emacs backups
+*~

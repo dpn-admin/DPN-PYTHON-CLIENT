@@ -212,7 +212,7 @@ class Client(BaseClient):
         if status is not None:
             data['status'] = status
         if fixity is not None:
-            data['fixity'] = fixity
+            data['receipt'] = fixity
         print(data)
         response = client.transfer_update(data)
         if response is not None:

@@ -1,223 +1,94 @@
-import const
 import json
-import requests
+import util
+import dpn_rest_settings as settings
+from base_client import BaseClient
+from requests.exceptions import RequestException
+from datetime import datetime
 
-class Client:
-
+class Client(BaseClient):
+    """
+    This is the higher-level DPN REST client that performs meaningful
+    repository operations. It's based on the lower-level BaseClient, which
+    just does raw REST operations, and it does expose the BaseClient's
+    methods.
+    """
     def __init__(self, url, token):
-        while url.endswith('/'):
-            url = url[:-1]
-        self.url = url
-        self.token = token
+        super(Client, self).__init__(url, token)
+        self.my_node = None
+        self.all_nodes = []
+        self.replicate_to = []
+        self.replicate_from = []
+        self.restore_to = []
+        self.restore_from = []
+        self._init_nodes()
 
-    def headers(self):
-        return {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'token {0}'.format(self.token),
+
+    def _init_nodes(self):
+        """
+        Initializes some information about all known nodes, including
+        which node is ours, which nodes we can replicate to and from,
+        and which nodes we can restore to and from.
+        """
+        response = self.node_list()
+        data = response.json()
+        self.all_nodes = data['results']
+        for node in self.all_nodes:
+            if node['namespace'] == settings.MY_NODE:
+                self.my_node = node
+            if node['replicate_from']:
+                self.replicate_from.append(node)
+            if node['replicate_to']:
+                self.replicate_to.append(node)
+            if node['restore_from']:
+                self.restore_from.append(node)
+            if node['restore_to']:
+                self.restore_to.append(node)
+        return True
+
+
+    def create_registry_entry(self, obj_id, bag_type, bag_size):
+        if not util.bag_type_valid(bag_type):
+            raise ValueError("bag_type '{0}' is not valid".format(bag_type))
+        if not isinstance(bag_size, int):
+            raise TypeError("bag_size must be an integer")
+        timestamp = util.now_str()
+        entry = {
+            "first_node": self.my_node['namespace'],
+            "brightening_objects": [],
+            "rights_objects": [],
+            "replicating_nodes": [],
+            "dpn_object_id": obj_id,
+            "local_id": None,
+            "version_number": 1,
+            "creation_date": timestamp,
+            "last_modified_date": timestamp,
+            "bag_size": bag_size,
+            "object_type": bag_type,
+            "previous_version": None,
+            "forward_version": None,
+            "first_version": obj_id,
         }
-
-# ------------------------------------------------------------------
-# Node methods
-# ------------------------------------------------------------------
-    def node_list(self, **kwargs):
-        """
-        Returns a list of DPN nodes.
-
-        :param replicate_to: Boolean value.
-        :param replicate_from: Boolean value.
-        :param page_size: Number of max results per page.
-
-        :returns: requests.Response
-        """
-        url = "{0}/node/".format(self.url)
-        return requests.get(url, headers=self.headers(), data=kwargs)
-
-    def node_get(self, namespace):
-        """
-        Returns the DPN node with the specified namespace.
-
-        :param namespace: The namespace of the node. ('tdr', 'sdr', etc.)
-
-        :returns: requests.Response
-        """
-        url = "{0}/node/{1}/".format(self.url, namespace)
-        return requests.get(url, headers=self.headers())
+        return self.registry_create(entry)
 
 
 # ------------------------------------------------------------------
-# Registry methods
+# First node operations
 # ------------------------------------------------------------------
-    def registry_list(self, **kwargs):
-        """
-        Returns a requests.Response object whose json contains a list of
-        registry entries.
+# 1. Create registry entry. Do this when you, as first node, have received a new item.
 
-        :param before: DPN DateTime string to FILTER results by last_modified_date earlier than this.
-        :param after: DPN DateTime String to FILTER result by last_modified_date later than this.
-        :param first_node: String to FILTER by node namespace.
-        :param object_type: String character to FILTER by object type.
-        :param ordering: ORDER return by (accepted values: last_modified_date)
-        :param page_size: Number of max results per page.
+# 2. Create transfer request. After creating a registry entry, create requests for
+#    two other nodes to copy the new item.
 
-        :returns: requests.Response
-        """
-        url = "{0}/registry/".format(self.url)
-        return requests.get(url, headers=self.headers(), data=kwargs)
-
-    def registry_get(self, obj_id):
-        """
-        Returns a requests.Response object whose json contains the single
-        registry entry that matches the specified obj_id.
-
-        :param obj_id: A UUID string. The id of the registry entry to return.
-
-        :returns: requests.Response
-        """
-        url = "{0}/registry/{1}/".format(self.url, obj_id)
-        return requests.get(url, headers=self.headers())
-
-    def registry_create(self, obj):
-        """
-        Creates a registry entry. Only the repository admin can make this call,
-        which means you can issue this call only against your own node.
-
-        :param obj: The object to create.
-
-        :returns: requests.Response
-        """
-        url = "{0}/registry/".format(self.url)
-        return requests.post(url, headers=self.headers(), data=json.dumps(obj))
-
-    def registry_update(self, obj):
-        """
-        Updates a registry entry. Only the repository admin can make this call,
-        which means you can issue this call only against your own node.
-
-        :param obj: The object to create.
-
-        :returns: requests.Response
-        """
-        url = "{0}/registry/{1}/".format(self.url, obj['dpn_object_id'])
-        return requests.put(url, headers=self.headers(), data=json.dumps(obj))
 
 
 
 # ------------------------------------------------------------------
-# Restoration methods
+# Replicating node operations
 # ------------------------------------------------------------------
-    def restore_list(self, **kwargs):
-        """
-        Returns a paged list of Restore requests.
+# 1. Query other nodes for transfer requests.
 
-        *** RESTORE IS NOT YET IMPLEMENTED ***
+# 2. Accept transfer requests. This tells the other node you will be storing the item.
 
-        :param dpn_object_id: Filter by DPN Object ID
-        :param status: Filter by status code.
-        :param node: Filter by node namespace.
-        :param ordered: Order by comma-separated list: 'created' and/or 'updated'
-
-        :returns: requests.Response
-        """
-        url = "{0}/restore/".format(self.url)
-        return requests.get(url, headers=self.headers(), data=kwargs)
-
-    def restore_get(self, event_id):
-        """
-        Returns the restore request with the specified event id.
-
-        *** RESTORE IS NOT YET IMPLEMENTED ***
-
-        :param obj_id: The event_id of the restore request.
-
-        :returns: requests.Response
-        """
-        url = "{0}/restore/{1}/".format(self.url, event_id)
-        return requests.get(url, headers=self.headers())
-
-    def restore_create(self, obj):
-        """
-        Creates a restore request. Only the repository admin can make this call,
-        which means you can issue this call only against your own node.
-
-        *** RESTORE IS NOT YET IMPLEMENTED ***
-
-        :param obj: The request to create.
-
-        :returns: requests.Response
-        """
-        url = "{0}/restore/".format(self.url)
-        return requests.post(url, headers=self.headers(), data=json.dumps(obj))
-
-    def restore_update(self, obj):
-        """
-        Updates a restore request.
-
-        *** RESTORE IS NOT YET IMPLEMENTED ***
-
-        :param obj_id: The ID of the restore request (NOT the ID of a DPN bag).
-
-        :returns: requests.Response
-        """
-        url = "{0}/restore/{1}/".format(self.url, obj['event_id'])
-        return requests.put(url, headers=self.headers(), data=json.dumps(obj))
-
-
-
-# ------------------------------------------------------------------
-# Transfer methods
-# ------------------------------------------------------------------
-    def transfer_list(self, **kwargs):
-        """
-        Returns a list of transfer requests, where the server wants you
-        to transfer bags to your repository.
-
-        :param dpn_object_id: Filter by exact DPN Object ID value.
-        :param status: [P|A|R|C] to Filter by Pending, Accept, Reject or Confirmed status
-        :param fixity: [true|false|none] to Filter by fixity status.
-        :param valid: [true|false|none] to Filter by validation status.
-        :param node: Filter by the namespace used for the node. ("aptrust"|"chron"|"sdr"...)
-        :param created_on: Order result by record creation date. (prepend '-' to reverse order)
-        :param updated_on: Order result by last update. (prepend '-' to reverse order)
-        :param page_size: Max number of results per page.
-
-        :returns: requests.Response
-        """
-        url = "{0}/transfer/".format(self.url)
-        return requests.get(url, headers=self.headers(), data=kwargs)
-
-    def transfer_get(self, event_id):
-        """
-        Returns the transfer requests with the specified id.
-
-        :param event_id: The event_id of the transfer request you want to retrieve.
-
-        :returns: requests.Response
-        """
-        url = "{0}/transfer/{1}/".format(self.url, event_id)
-        return requests.get(url, headers=self.headers())
-
-    def transfer_create(self, obj):
-        """
-        Creates a transfer request. Only the repository admin can make this call,
-        which means you can issue this call only against your own node.
-
-        :param obj: The request to create.
-
-        :returns: requests.Response
-        """
-        url = "{0}/transfer/".format(self.url)
-        return requests.post(url, headers=self.headers(), data=json.dumps(obj))
-
-    def transfer_update(self, obj):
-        """
-        Updates a transfer request. The only fields in the transfer object
-        relevant to this request are the event_id and status, which you
-        must set to either 'A' (Accept) or 'R' (Reject).
-
-        :param obj_id: The ID of the restore request (NOT the ID of a DPN bag).
-
-        :returns: requests.Response
-        """
-        url = "{0}/transfer/{1}/".format(self.url, obj['event_id'])
-        return requests.put(url, headers=self.headers(), data=json.dumps(obj))
+# 3. Send transfer fixity. Once you have received the item into your storage area,
+#    calculate the sha256 digest and send it back to the originating node to indicate
+#    your copy is complete.

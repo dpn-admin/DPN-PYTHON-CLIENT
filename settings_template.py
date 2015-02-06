@@ -7,11 +7,25 @@
 # has admin access.
 #
 
+# Set this to the namespace of your node ('tdr', 'sdr', 'aptrust', etc.)
+MY_NODE    = ''
+
+# Configurations for OUR OWN node.
 TEST       = { 'url': '', 'key': '', 'max_xfer_size': 0 }
 DEV        = { 'url': '', 'key': '', 'max_xfer_size': 0 }
 PRODUCTION = { 'url': '', 'key': '', 'max_xfer_size': 0 }
 
 available = [TEST, DEV, PRODUCTION]
+
+# API keys for OTHER nodes that we want to query.
+# Key is node namespace. Value is API key to connect to that node.
+KEYS = {
+    'aptrust': 'api key goes here',
+    'hathi':   'api key goes here',
+    'chron':   'api key goes here',
+    'sdr':     'api key goes here',
+    'tdr':     'api key goes here',
+    }
 
 def show_available():
     for config in available:

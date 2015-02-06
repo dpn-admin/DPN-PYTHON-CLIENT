@@ -55,7 +55,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/node/".format(self.url)
-        response = requests.get(url, headers=self.headers(), data=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -97,7 +97,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/registry/".format(self.url)
-        response = requests.get(url, headers=self.headers(), data=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -176,7 +176,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/restore/".format(self.url)
-        response = requests.get(url, headers=self.headers(), data=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -262,7 +262,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/transfer/".format(self.url)
-        response = requests.get(url, headers=self.headers(), data=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response

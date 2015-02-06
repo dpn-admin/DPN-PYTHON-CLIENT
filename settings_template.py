@@ -7,13 +7,18 @@
 # has admin access.
 #
 
-# Set this to the namespace of your node ('tdr', 'sdr', 'aptrust', etc.)
+# Set MY_NODE to the namespace of your node ('tdr', 'sdr', 'aptrust', etc.)
 MY_NODE    = ''
 
+
 # Configurations for OUR OWN node.
-TEST       = { 'url': '', 'key': '', 'max_xfer_size': 0 }
-DEV        = { 'url': '', 'key': '', 'max_xfer_size': 0 }
-PRODUCTION = { 'url': '', 'key': '', 'max_xfer_size': 0 }
+# url is the url for your own node
+# key is the API key for admin user at your own node.
+# rsync_host is the hostname from which other nodes will transfer your content
+# max_xfer_size is the max size of files you are willing to transfer in
+TEST       = { 'url': '', 'key': '', 'rsync_host': '', 'max_xfer_size': 0 }
+DEV        = { 'url': '', 'key': '', 'rsync_host': '', 'max_xfer_size': 0 }
+PRODUCTION = { 'url': '', 'key': '', 'rsync_host': '', 'max_xfer_size': 0 }
 
 available = [TEST, DEV, PRODUCTION]
 

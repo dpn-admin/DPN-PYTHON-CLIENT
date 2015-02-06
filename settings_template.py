@@ -7,6 +7,16 @@
 # has admin access.
 #
 
-TEST       = { 'url': '', 'key': '' }
-DEV        = { 'url': '', 'key': '' }
-PRODUCTION = { 'url': '', 'key': '' }
+TEST       = { 'url': '', 'key': '', 'max_xfer_size': 0 }
+DEV        = { 'url': '', 'key': '', 'max_xfer_size': 0 }
+PRODUCTION = { 'url': '', 'key': '', 'max_xfer_size': 0 }
+
+available = [TEST, DEV, PRODUCTION]
+
+def show_available():
+    for config in available:
+        if config['url'] != '' and config['key'] != '':
+            max_xfer_size = config['max_xfer_size']
+            if max_xfer_size == 0:
+                max_xfer_size = "no size limit"
+            print("{0} ... {1}".format(config['url'], max_xfer_size))

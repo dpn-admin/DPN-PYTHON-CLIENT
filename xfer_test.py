@@ -49,13 +49,13 @@ class XferTest:
             # mark the transfer as accepted
             # ...
             # rsync the file
-            copy_file(link)
+            self.copy_file(link)
             # calculate the checksum
             # ...
             # send the checksum as receipt
             # ...
 
-    def copy_file(location):
+    def copy_file(self, location):
         filename = os.path.basename(location.split(":")[1])
         dst = os.path.join(dpn_rest_settings.INBOUND_DIR, filename)
         command = ["rsync", "-Lav", "--compress",

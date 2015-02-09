@@ -8,7 +8,27 @@
 #
 
 # Set MY_NODE to the namespace of your node ('tdr', 'sdr', 'aptrust', etc.)
-MY_NODE    = ''
+MY_NODE    = 'aptrust'
+
+# This should be the IP address or fully-qualified domain name of your
+# DPN node. This is used in constructing links to bags you want partners
+# to replicate.
+MY_SERVER  = 'devops.aptrust.org'
+
+# Where do we keep DPN bags?
+# OUTBOUND_DIR - full path to dir containing DPN bags for other nodes to copy.
+# INBOUND_DIR  - full path to dir where we will store bags that we are
+#                replicating from other nodes. We need to run checksums on
+#                these and then send them off to long-term storage.
+OUTBOUND_DIR = '/path/to/outbound'
+INBOUND_DIR  = '/path/to/inbound'
+
+# PARTNER_OUTBOUND_DIR is the name of the directory under the partner's
+# home directory where they should look for files we want them to copy.
+# For example, partner xyz will have an account on MY_SERVER under
+# /home/dpn.xyz. We'll put files in /home/dpn.xyz/outbound for them to
+# copy.
+PARTNER_OUTBOUND_DIR = "outbound"
 
 
 # Configurations for OUR OWN node.

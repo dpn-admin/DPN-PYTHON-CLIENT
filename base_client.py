@@ -28,7 +28,7 @@ class BaseClient:
             url = url[:-1]
         self.url = url
         self.token = token
-        self.verify_ssl = True
+        self.verify_ssl = False  # TDR cert is not legit - FIX THIS!
 
     def headers(self):
         """

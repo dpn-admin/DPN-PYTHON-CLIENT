@@ -37,7 +37,6 @@ class XferTest:
         self.client = client.Client(
             config['url'], config['key'], config['rsync_host'],
             config['max_xfer_size'])
-        self.client.verify_ssl = False  # TDR does not have a legit cert
 
     def replicate_files(self, namespace):
         """

@@ -28,6 +28,7 @@ class BaseClient:
             url = url[:-1]
         self.url = url
         self.token = token
+        self.verify_ssl = True
 
     def headers(self):
         """
@@ -55,7 +56,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/node/".format(self.url)
-        response = requests.get(url, headers=self.headers(), params=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs,
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -71,7 +73,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/node/{1}/".format(self.url, namespace)
-        response = requests.get(url, headers=self.headers())
+        response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -97,7 +99,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/registry/".format(self.url)
-        response = requests.get(url, headers=self.headers(), params=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs,
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -115,7 +118,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/registry/{1}/".format(self.url, obj_id)
-        response = requests.get(url, headers=self.headers())
+        response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -133,7 +136,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/registry/".format(self.url)
-        response = requests.post(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.post(url, headers=self.headers(), data=json.dumps(obj),
+                                 verify=self.verify_ssl)
         if response.status_code != 201:
             raise RequestException(response.text, response=response)
         return response
@@ -151,7 +155,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/registry/{1}/".format(self.url, obj['dpn_object_id'])
-        response = requests.put(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -176,7 +181,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/restore/".format(self.url)
-        response = requests.get(url, headers=self.headers(), params=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs,
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -195,7 +201,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/restore/{1}/".format(self.url, event_id)
-        response = requests.get(url, headers=self.headers())
+        response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -215,7 +221,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/restore/".format(self.url)
-        response = requests.post(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.post(url, headers=self.headers(), data=json.dumps(obj),
+                                 verify=self.verify_ssl)
         if response.status_code != 201:
             raise RequestException(response.text, response=response)
         return response
@@ -234,7 +241,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/restore/{1}/".format(self.url, obj['event_id'])
-        response = requests.put(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -262,7 +270,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/transfer/".format(self.url)
-        response = requests.get(url, headers=self.headers(), params=kwargs)
+        response = requests.get(url, headers=self.headers(), params=kwargs,
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -279,7 +288,7 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/transfer/{1}/".format(self.url, event_id)
-        response = requests.get(url, headers=self.headers())
+        response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
@@ -297,7 +306,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/transfer/".format(self.url)
-        response = requests.post(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.post(url, headers=self.headers(), data=json.dumps(obj),
+                                 verify=self.verify_ssl)
         if response.status_code != 201:
             raise RequestException(response.text, response=response)
         return response
@@ -316,7 +326,8 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/transfer/{1}/".format(self.url, obj['event_id'])
-        response = requests.put(url, headers=self.headers(), data=json.dumps(obj))
+        response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
+                                verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response

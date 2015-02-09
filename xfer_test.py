@@ -44,11 +44,30 @@ class XferTest:
         """
         requests = self.client.get_transfer_requests(namespace)
         for request in requests:
+            link = request['link'].replace("dpn.nodename.org", "rest.lib.utexas.edu", 1)
             print(request['link'])
             # mark the transfer as accepted
+            # ...
             # rsync the file
+            copy_file(link)
             # calculate the checksum
+            # ...
             # send the checksum as receipt
+            # ...
+
+    def copy_file(location):
+        filename = os.path.basename(location.split(":")[1])
+        dst = os.path.join(dpn_rest_settings.INBOUND_DIR, filename)
+        command = ["rsync", "-Lav", "--compress",
+                   "--compress-level=0", location, dst]
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
+                print(str(proc.communicate()[0]))
+            return dst
+
+        except Exception as err:
+            print("ERROR Transfer failed: {0}".format(err))
+            raise err
 
 
 if __name__ == "__main__":

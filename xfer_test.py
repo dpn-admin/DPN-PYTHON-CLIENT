@@ -45,12 +45,11 @@ class XferTest:
         """
         requests = self.client.get_transfer_requests(namespace)
         for request in requests:
-            link = request['link'].replace("dpn.nodename.org", "rest.lib.utexas.edu", 1)
-            print(link)
+            print(request['link'])
             # mark the transfer as accepted
             # ...
             # rsync the file
-            self.copy_file(link)
+            self.copy_file(request['link'])
             # calculate the checksum
             # ...
             # send the checksum as receipt

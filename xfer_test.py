@@ -45,22 +45,26 @@ class XferTest:
         """
         requests = self.client.get_transfer_requests(namespace)
         for request in requests:
-            print(request['link'])
+            link = request['link']
+            event_id = request['event_id']
             # mark the transfer as accepted
-            # ...
-            # rsync the file
-            self.copy_file(request['link'])
+            print("Accepting xfer {0}".format(event_id))
+            self.client.accept_transfer_request(namespace, event_id)
+            # download the file via rsync
+            print("Downloading {0}".format(link))
+            local_path = self.copy_file(link)
             # calculate the checksum
-            # ...
+            checksum = util.digest(local_path, "sha256")
             # send the checksum as receipt
-            # ...
+            print("Returning checksum receipt {0}".format(checksum))
+            self.client.set_transfer_fixity(namespace, event_id, checksum)
 
     def copy_file(self, location):
         filename = os.path.basename(location.split(":")[1])
         dst = os.path.join(dpn_rest_settings.INBOUND_DIR, filename)
         command = ["rsync", "-Lav", "--compress",
-                   "--compress-level=0", location, dst]
-        print(" ".join(command))
+                   "--compress-level=0", "--quiet", location, dst]
+        #print(" ".join(command))
         try:
             with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
                 print(str(proc.communicate()[0]))

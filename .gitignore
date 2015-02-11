@@ -9,3 +9,6 @@ dpn_rest_settings.py
 
 # Emacs backups
 *~
+
+# Directory for inbound transfers on test server
+inbound/

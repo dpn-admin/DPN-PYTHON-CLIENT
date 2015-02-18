@@ -1,4 +1,4 @@
-import const
+from dpnclient import const
 import json
 import requests
 from requests.exceptions import RequestException

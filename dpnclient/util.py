@@ -1,18 +1,18 @@
 import re
-import const
-import dpn_rest_settings
+from dpnclient import const
 import hashlib
 from datetime import datetime
 
 # Regex for something that looks like a UUID.
 RE_UUID = re.compile("^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-?[a-f0-9]{12}\Z", re.IGNORECASE)
+RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.*\d*Z\Z')
 
 def now_str():
     """
     Returns datetime.now in the form of a string. Useful for creating
     JSON dates.
     """
-    return str(datetime.now())
+    return datetime.utcnow().isoformat("T") + "Z"
 
 def looks_like_uuid(string):
     """
@@ -48,24 +48,42 @@ def username(namespace):
     """
     Returns the local user name (ssh account) for the specified namespace.
     """
-    return "dpn.{0}".format(namepsace)
+    return "dpn.{0}".format(namespace)
 
 def xfer_dir(namespace):
     """
     Returns the name of the "outbound" directory for the specified
     partner. E.g. "tdr" => /home/dpn.tdr/outbound
+
+    *** TODO: USE SETTINGS INSTEAD! THIS SHOULD NOT BE HARD CODED! ***
     """
     user = username(namespace)
     return "/home/{0}/outbound".format(user)
 
-def rsync_link(namespace, filename):
+def rsync_link(namespace, my_server, partner_outbound_dir, filename):
     """
     Returns the rsync url for the specified namespace to copy the
     specified file.
+
+    :param namespace: is the namespace of the node you want to copy
+    this file (tdr, srd, chron, etc).
+
+    :param my_server: should be your server's fully-qualified domain
+    name or IP address, as set in your dpn_rest_settings.py file.
+
+    :param partner_outbound_dir: should be the name of the directory
+    in which you hold files for the partner specified in namespace to
+    copy outbound files.
+
+    :param filename: is the name of the file to copy (usually a UUID
+    with a .tar extension)
+
+    :returns: A string that looks like this: user@myserver.kom:dir/filename.tar
     """
+    if partner_outbound_dir.endswith('/') == False:
+        partner_outbound_dir += '/'
     return "{0}@{1}:{2}{3}".format(
-        user(namespace), dpn_rest_settings.MY_SERVER,
-        dpn_rest_settings.PARTNER_OUTBOUND_DIR, filename)
+        username(namespace), my_server, partner_outbound_dir, filename)
 
 def digest(abs_path, algorithm):
     """

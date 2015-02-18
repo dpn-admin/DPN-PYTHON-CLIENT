@@ -1,8 +1,7 @@
 import json
-import const
-import util
-import dpn_rest_settings as settings
-from base_client import BaseClient
+from dpnclient import const
+from dpnclient import util
+from dpnclient.base_client import BaseClient
 from requests.exceptions import RequestException
 from datetime import datetime
 
@@ -12,11 +11,21 @@ class Client(BaseClient):
     repository operations. It's based on the lower-level BaseClient, which
     just does raw REST operations, and it does expose the BaseClient's
     methods.
+
+    :param settings: An instance of dpn_rest_settings, which is just a
+    python config file. See settings_template.py for info about what should
+    be in the settings file.
+
+    :param active_config: A dictionary from dpn_rest_settings.py containing
+    information about how to connect to a DPN rest server. The
+    dpn_rest_settings.py file may have dictionaries called TEST, DEV, and
+    PRODUCTION, each with keys 'url', 'token', 'rsync_host' and 'max_xfer_size'.
     """
-    def __init__(self, url, token, rsync_host, max_xfer_size):
-        super(Client, self).__init__(url, token)
-        self.rsync_host = rsync_host
-        self.max_xfer_size = max_xfer_size
+    def __init__(self, settings, active_config):
+        super(Client, self).__init__(active_config['url'], active_config['token'])
+        self.rsync_host = active_config['rsync_host']
+        self.max_xfer_size = active_config['max_xfer_size']
+        self.settings = settings
         self.my_node = None
         self.all_nodes = []
         self.replicate_to = []
@@ -36,7 +45,7 @@ class Client(BaseClient):
         data = response.json()
         self.all_nodes = data['results']
         for node in self.all_nodes:
-            if node['namespace'] == settings.MY_NODE:
+            if node['namespace'] == self.settings.MY_NODE:
                 self.my_node = node
             if node['replicate_from']:
                 self.replicate_from.append(node)
@@ -139,7 +148,7 @@ class Client(BaseClient):
         """
         other_node = self.nodes_by_namespace[remote_node_namespace]
         url = other_node['api_root']
-        api_key = settings.KEYS[remote_node_namespace]
+        api_key = self.settings.KEYS[remote_node_namespace]
         client = BaseClient(url, api_key)
         page_num = 0
         xfer_requests = []
@@ -149,7 +158,7 @@ class Client(BaseClient):
             page_num += 1
             response = client.transfer_list(status='P',
                                             page_size=20,
-                                            node=settings.MY_NODE,
+                                            node=self.settings.MY_NODE,
                                             page=page_num)
             data = response.json()
             xfer_requests.extend(data['results'])
@@ -206,7 +215,7 @@ class Client(BaseClient):
     def _update_transfer_request(self, remote_node_namespace, event_id, status, fixity):
         other_node = self.nodes_by_namespace[remote_node_namespace]
         url = other_node['api_root']
-        api_key = settings.KEYS[remote_node_namespace]
+        api_key = self.settings.KEYS[remote_node_namespace]
         client = BaseClient(url, api_key)
         data = { "event_id": event_id }
         if status is not None:

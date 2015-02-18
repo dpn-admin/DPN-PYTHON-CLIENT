@@ -25,19 +25,16 @@
 # Param remote_node should be one of: tdr, sdr, chron or hathi
 #
 # ----------------------------------------------------------------------
-import client
+from dpnclient import client, util
 import dpn_rest_settings
 import hashlib
 import os
 import subprocess
-import util
 
 class XferTest:
 
     def __init__(self, config):
-        self.client = client.Client(
-            config['url'], config['key'], config['rsync_host'],
-            config['max_xfer_size'])
+        self.client = client.Client(dpn_rest_settings, dpn_rest_settings.DEV)
 
     def replicate_files(self, namespace):
         """

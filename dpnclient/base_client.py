@@ -28,7 +28,7 @@ class BaseClient:
             url = url[:-1]
         self.url = url
         self.token = token
-        self.verify_ssl = False  # TDR cert is not legit - FIX THIS!
+        self.verify_ssl = True  # TDR cert is not legit - FIX THIS!
 
     def headers(self):
         """
@@ -80,12 +80,12 @@ class BaseClient:
 
 
 # ------------------------------------------------------------------
-# Registry methods
+# Bag methods
 # ------------------------------------------------------------------
-    def registry_list(self, **kwargs):
+    def bag_list(self, **kwargs):
         """
         Returns a requests.Response object whose json contains a list of
-        registry entries.
+        bag entries.
 
         :param before: DPN DateTime string to FILTER results by last_modified_date earlier than this.
         :param after: DPN DateTime String to FILTER result by last_modified_date later than this.
@@ -98,7 +98,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/registry/".format(self.url)
+        url = "{0}/api-v1/bag/".format(self.url)
         response = requests.get(url, headers=self.headers(), params=kwargs,
                                 verify=self.verify_ssl)
         if response.status_code != 200:
@@ -106,27 +106,27 @@ class BaseClient:
         return response
 
 
-    def registry_get(self, obj_id):
+    def bag_get(self, obj_id):
         """
         Returns a requests.Response object whose json contains the single
-        registry entry that matches the specified obj_id.
+        bag entry that matches the specified obj_id.
 
-        :param obj_id: A UUID string. The id of the registry entry to return.
+        :param obj_id: A UUID string. The id of the bag entry to return.
 
         :returns: requests.Response
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/registry/{1}/".format(self.url, obj_id)
+        url = "{0}/api-v1/bag/{1}/".format(self.url, obj_id)
         response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
         return response
 
 
-    def registry_create(self, obj):
+    def bag_create(self, obj):
         """
-        Creates a registry entry. Only the repository admin can make this call,
+        Creates a bag entry. Only the repository admin can make this call,
         which means you can issue this call only against your own node.
 
         :param obj: The object to create.
@@ -135,7 +135,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/registry/".format(self.url)
+        url = "{0}/api-v1/bag/".format(self.url)
         response = requests.post(url, headers=self.headers(), data=json.dumps(obj),
                                  verify=self.verify_ssl)
         if response.status_code != 201:
@@ -143,9 +143,9 @@ class BaseClient:
         return response
 
 
-    def registry_update(self, obj):
+    def bag_update(self, obj):
         """
-        Updates a registry entry. Only the repository admin can make this call,
+        Updates a bag entry. Only the repository admin can make this call,
         which means you can issue this call only against your own node.
 
         :param obj: The object to create.
@@ -154,7 +154,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/registry/{1}/".format(self.url, obj['dpn_object_id'])
+        url = "{0}/api-v1/bag/{1}/".format(self.url, obj['dpn_object_id'])
         response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
                                 verify=self.verify_ssl)
         if response.status_code != 200:
@@ -188,19 +188,19 @@ class BaseClient:
         return response
 
 
-    def restore_get(self, event_id):
+    def restore_get(self, restore_id):
         """
         Returns the restore request with the specified event id.
 
         *** RESTORE IS NOT YET IMPLEMENTED ***
 
-        :param obj_id: The event_id of the restore request.
+        :param obj_id: The restore_id of the restore request.
 
         :returns: requests.Response
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/restore/{1}/".format(self.url, event_id)
+        url = "{0}/api-v1/restore/{1}/".format(self.url, restore_id)
         response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
@@ -240,7 +240,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/restore/{1}/".format(self.url, obj['event_id'])
+        url = "{0}/api-v1/restore/{1}/".format(self.url, obj['restore_id'])
         response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
                                 verify=self.verify_ssl)
         if response.status_code != 200:
@@ -249,7 +249,7 @@ class BaseClient:
 
 
 # ------------------------------------------------------------------
-# Transfer methods
+# Replication Transfer methods
 # ------------------------------------------------------------------
     def transfer_list(self, **kwargs):
         """
@@ -257,10 +257,11 @@ class BaseClient:
         to transfer bags to your repository.
 
         :param dpn_object_id: Filter by exact DPN Object ID value.
-        :param status: [P|A|R|C] to Filter by Pending, Accept, Reject or Confirmed status
+        :param status: Filter by request status ('Requested', 'Confirmed', etc)
         :param fixity: [true|false|none] to Filter by fixity status.
         :param valid: [true|false|none] to Filter by validation status.
-        :param node: Filter by the namespace used for the node. ("aptrust"|"chron"|"sdr"...)
+        :param from_node: Filter by namespace that originated request. ("aptrust"|"chron"|"sdr"...)
+        :param to_node: Filter by namespace that should fulfill request. ("aptrust"|"chron"|"sdr"...)
         :param created_on: Order result by record creation date. (prepend '-' to reverse order)
         :param updated_on: Order result by last update. (prepend '-' to reverse order)
         :param page_size: Max number of results per page.
@@ -269,7 +270,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/transfer/".format(self.url)
+        url = "{0}/api-v1/replicate/".format(self.url)
         response = requests.get(url, headers=self.headers(), params=kwargs,
                                 verify=self.verify_ssl)
         if response.status_code != 200:
@@ -277,17 +278,17 @@ class BaseClient:
         return response
 
 
-    def transfer_get(self, event_id):
+    def transfer_get(self, replication_id):
         """
         Returns the transfer requests with the specified id.
 
-        :param event_id: The event_id of the transfer request you want to retrieve.
+        :param replication_id: The replication_id of the transfer request you want to retrieve.
 
         :returns: requests.Response
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/transfer/{1}/".format(self.url, event_id)
+        url = "{0}/api-v1/replicate/{1}/".format(self.url, replication_id)
         response = requests.get(url, headers=self.headers(), verify=self.verify_ssl)
         if response.status_code != 200:
             raise RequestException(response.text, response=response)
@@ -305,7 +306,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/transfer/".format(self.url)
+        url = "{0}/api-v1/replicate/".format(self.url)
         response = requests.post(url, headers=self.headers(), data=json.dumps(obj),
                                  verify=self.verify_ssl)
         if response.status_code != 201:
@@ -316,7 +317,7 @@ class BaseClient:
     def transfer_update(self, obj):
         """
         Updates a transfer request. The only fields in the transfer object
-        relevant to this request are the event_id and status, which you
+        relevant to this request are the replication_id and status, which you
         must set to either 'A' (Accept) or 'R' (Reject).
 
         :param obj_id: The ID of the restore request (NOT the ID of a DPN bag).
@@ -325,7 +326,7 @@ class BaseClient:
 
         :raises RequestException: Check the response property for details.
         """
-        url = "{0}/api-v1/transfer/{1}/".format(self.url, obj['event_id'])
+        url = "{0}/api-v1/replicate/{1}/".format(self.url, obj['replication_id'])
         response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
                                 verify=self.verify_ssl)
         if response.status_code != 200:

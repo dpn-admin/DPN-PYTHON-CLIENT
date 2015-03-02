@@ -34,7 +34,7 @@ import subprocess
 class XferTest:
 
     def __init__(self, config):
-        self.client = client.Client(dpn_rest_settings, dpn_rest_settings.DEV)
+        self.client = client.Client(dpn_rest_settings, dpn_rest_settings.TEST)
 
     def replicate_files(self, namespace):
         """
@@ -43,10 +43,7 @@ class XferTest:
         requests = self.client.get_transfer_requests(namespace)
         for request in requests:
             link = request['link']
-            event_id = request['event_id']
-            # mark the transfer as accepted
-            print("Accepting xfer {0}".format(event_id))
-            self.client.accept_transfer_request(namespace, event_id)
+            replication_id = request['replication_id']
             # download the file via rsync
             print("Downloading {0}".format(link))
             local_path = self.copy_file(link)
@@ -54,7 +51,7 @@ class XferTest:
             checksum = util.digest(local_path, "sha256")
             # send the checksum as receipt
             print("Returning checksum receipt {0}".format(checksum))
-            self.client.set_transfer_fixity(namespace, event_id, checksum)
+            self.client.set_transfer_fixity(namespace, replication_id, checksum)
 
     def copy_file(self, location):
         filename = os.path.basename(location.split(":")[1])
@@ -73,5 +70,5 @@ class XferTest:
 
 
 if __name__ == "__main__":
-    xfer = XferTest(dpn_rest_settings.DEV)
-    xfer.replicate_files("tdr")
+    xfer = XferTest(dpn_rest_settings.TEST)
+    xfer.replicate_files("test")

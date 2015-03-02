@@ -156,9 +156,9 @@ class Client(BaseClient):
         # Get transfer requests in batches
         while True:
             page_num += 1
-            response = client.transfer_list(status='P',
+            response = client.transfer_list(status='Requested',
                                             page_size=20,
-                                            node=self.settings.MY_NODE,
+                                            to_node=self.settings.MY_NODE,
                                             page=page_num)
             data = response.json()
             xfer_requests.extend(data['results'])
@@ -167,42 +167,28 @@ class Client(BaseClient):
 
         return xfer_requests
 
-    def accept_transfer_request(self, remote_node_namespace, event_id):
-        """
-        Tells a remote node that you are accepting its transfer request.
-
-        :param remote_node_namespace: The namespace of the node to connect to.
-        :param event_id: The ID of the transfer request you are accepting.
-
-        :returns: An updated transfer request.
-
-        :raises RequestException: Check the response property for details.
-        """
-        return self._update_transfer_request(
-            remote_node_namespace, event_id, const.STATUS_ACCEPT, None)
-
-    def reject_transfer_request(self, remote_node_namespace, event_id):
+    def reject_transfer_request(self, remote_node_namespace, replication_id):
         """
         Tells a remote node that you are rejectting its transfer request.
 
         :param remote_node_namespace: The namespace of the node to connect to.
-        :param event_id: The ID of the transfer request you are rejecting.
+        :param replication_id: The ID of the transfer request you are rejecting.
 
         :returns: An updated transfer request.
 
         :raises RequestException: Check the response property for details.
         """
         return self._update_transfer_request(
-            remote_node_namespace, event_id, const.STATUS_REJECT, None)
+            remote_node_namespace, replication_id, const.STATUS_REJECT, None)
 
-    def set_transfer_fixity(self, remote_node_namespace, event_id, fixity):
+    def set_transfer_fixity(self, remote_node_namespace, replication_id, fixity):
         """
         Tells a remote node that you have copied the file in its transfer
         request and that you calculated the specified SHA-256 checksum on
         that file.
 
         :param remote_node_namespace: The namespace of the node to connect to.
-        :param event_id: The ID of the transfer request you completed.
+        :param replication_id: The ID of the transfer request you completed.
         :param fixity: The SHA-256 checksum of the file you copied.
 
         :returns: An updated transfer request.
@@ -210,18 +196,18 @@ class Client(BaseClient):
         :raises RequestException: Check the response property for details.
         """
         return self._update_transfer_request(
-            remote_node_namespace, event_id, None, fixity)
+            remote_node_namespace, replication_id, None, fixity)
 
-    def _update_transfer_request(self, remote_node_namespace, event_id, status, fixity):
+    def _update_transfer_request(self, remote_node_namespace, replication_id, status, fixity):
         other_node = self.nodes_by_namespace[remote_node_namespace]
         url = other_node['api_root']
         api_key = self.settings.KEYS[remote_node_namespace]
         client = BaseClient(url, api_key)
-        data = { "event_id": event_id }
+        data = { "replication_id": replication_id }
         if status is not None:
             data['status'] = status
         if fixity is not None:
-            data['receipt'] = fixity
+            data['fixity_value'] = fixity
         print(data)
         response = client.transfer_update(data)
         if response is not None:

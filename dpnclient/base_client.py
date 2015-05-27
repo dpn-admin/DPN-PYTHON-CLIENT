@@ -317,8 +317,8 @@ class BaseClient:
     def transfer_update(self, obj):
         """
         Updates a transfer request. The only fields in the transfer object
-        relevant to this request are the replication_id and status, which you
-        must set to either 'A' (Accept) or 'R' (Reject).
+        relevant to this request are the replication_id, fixity_value,
+        and status, which you must set to either 'A' (Accept) or 'R' (Reject).
 
         :param obj_id: The ID of the restore request (NOT the ID of a DPN bag).
 

@@ -6,7 +6,7 @@ Python 3.4, but should run just as well on Python 2.7.
 To get started quickly in Python 3.4:
 
 ```
-git clone git@github.com:APTrust/dpn-rest-client.git
+git clone git@github.com:dpn-admin/DPN-PYTHON-CLIENT.git
 cd dpn-rest-client
 pyvenv .dpn
 source .dpn/bin/activate

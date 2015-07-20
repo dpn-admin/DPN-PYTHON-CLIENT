@@ -1,7 +1,7 @@
 import os
 from pytest import raises
-from dpnclient import util
-from dpnclient import const
+from . import util
+from . import const
 from datetime import datetime
 
 def test_now_str():

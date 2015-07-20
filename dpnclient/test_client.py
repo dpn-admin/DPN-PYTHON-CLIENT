@@ -1,5 +1,5 @@
 from pytest import raises
-from dpnclient.client import Client
+from .client import Client
 
 # TODO: Integration tests. There is nothing testable
 # in client.py without a server to talk to.

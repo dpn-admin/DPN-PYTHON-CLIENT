@@ -1,4 +1,4 @@
-from dpnclient import const
+from . import const
 import json
 import requests
 from requests.exceptions import RequestException
@@ -327,6 +327,11 @@ class BaseClient:
         :raises RequestException: Check the response property for details.
         """
         url = "{0}/api-v1/replicate/{1}/".format(self.url, obj['replication_id'])
+
+        print("transfer_update " + json.dumps(obj))
+        print("Headers: " + str(self.headers()))
+        print("URL: " + url)
+
         response = requests.put(url, headers=self.headers(), data=json.dumps(obj),
                                 verify=self.verify_ssl)
         if response.status_code != 200:

@@ -1,5 +1,5 @@
 import re
-from dpnclient import const
+from . import const
 import hashlib
 from datetime import datetime
 

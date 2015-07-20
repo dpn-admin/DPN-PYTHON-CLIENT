@@ -1,4 +1,4 @@
-from dpnclient.base_client import BaseClient
+from .base_client import BaseClient
 
 # TODO: Integration tests!
 

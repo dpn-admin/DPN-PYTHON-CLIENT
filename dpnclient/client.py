@@ -1,7 +1,7 @@
 import json
-from dpnclient import const
-from dpnclient import util
-from dpnclient.base_client import BaseClient
+from . import const
+from . import util
+from .base_client import BaseClient
 from requests.exceptions import RequestException
 from datetime import datetime
 
@@ -58,7 +58,7 @@ class Client(BaseClient):
             self.nodes_by_namespace[node['namespace']] = node
         return True
 
-    def create_registry_entry(self, obj_id, bag_size, bag_type):
+    def create_bag_entry(self, obj_id, bag_size, bag_type, fixity, local_id):
         """
         Creates a new registry entry on your own node. You must be admin
         to do this, and you cannot create registry entries on other nodes.
@@ -79,22 +79,18 @@ class Client(BaseClient):
             raise ValueError("bag_type '{0}' is not valid".format(bag_type))
         timestamp = util.now_str()
         entry = {
-            "first_node": self.my_node['namespace'],
-            "brightening_objects": [],
-            "rights_objects": [],
-            "replicating_nodes": [],
-            "dpn_object_id": obj_id,
-            "local_id": None,
+            "original_node": self.my_node['namespace'],
+            "admin_node": self.my_node['namespace'],
+            "uuid": obj_id,
+            "fixities": [{"algorithm":"sha256", "digest":fixity}],
+            "local_id": local_id,
             "version_number": 1,
-            "creation_date": timestamp,
-            "last_modified_date": timestamp,
-            "bag_size": bag_size,
-            "object_type": bag_type,
-            "previous_version": None,
-            "forward_version": None,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "size": bag_size,
             "first_version": obj_id,
         }
-        response = self.registry_create(entry)
+        response = self.bag_create(entry)
         if response is not None:
             return response.json()
         return None
@@ -122,13 +118,15 @@ class Client(BaseClient):
             raise ValueError("username must be a non-empty string")
         if not isinstance(fixity, str) or fixity.strip() == "":
             raise ValueError("fixity must be a non-empty string")
-        link = "{0}@{1}:{2}".format(username, self.rsync_host, obj_id)
+        link = "{0}@{1}:/dpn/bags/{2}".format(username, self.rsync_host, obj_id + ".tar")
         xfer_req = {
-            "dpn_object_id": obj_id,
+            "uuid": obj_id,
             "link": link,
-            "node": self.my_node['namespace'],
+            "from_node": self.my_node['namespace'],
+            "to_node": username,
             "size": bag_size,
-            "exp_fixity": fixity,
+            "fixity_algorithm": "sha256",
+            "fixity_value": fixity,
         }
         response = self.transfer_create(xfer_req)
         if response is not None:
